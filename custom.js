@@ -4,8 +4,15 @@ var through = require('through')
 
 var processEnvPattern = /\bprocess\.env\b/
 
-module.exports = function(rootEnv) {
+module.exports = function(rootEnv, allowedKeys) {
   rootEnv = rootEnv || process.env || {}
+  allowedKeys = allowedKeys || ['NODE_ENV']
+  rootEnv = Object.keys(rootEnv).filter(function isAllowed(k) {
+    return allowedKeys.indexOf(k) >= 0
+  }).reduce(function storeValue(memo, k) {
+    memo[k] = rootEnv[k]
+    return memo
+  }, {})
 
   return function envify(file, argv) {
     if (/\.json$/.test(file)) return through()
